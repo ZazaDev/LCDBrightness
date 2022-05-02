@@ -9,7 +9,7 @@
 #include <Arduino.h>
 #include <LiquidCrystal.h>
 
-enum Keys{btnRight = 0, btnUp, btnDown, btnLeft, btnSelect, btnNone};
+enum Keys{btnRight = 0, btnUp, btnDown, btnLeft};
 
 // Creating custom characters for the UI
 namespace Character
@@ -34,7 +34,7 @@ class HUD{
           case btnRight:
             lcd.setCursor(0, 0);
             lcd.print("LDR: ");
-            lcd.setCursor(0, 5);
+            lcd.setCursor(4, 0);
             lcd.print(adr_ldr);
             lcd.setCursor(0, 1);
             lcd.write(byte(0));
@@ -42,23 +42,23 @@ class HUD{
             lcd.setCursor(6, 1);
             lcd.write(byte(2));
             lcd.print("ALL  ");
-            lcd.setCursor(12, 1);
+            lcd.setCursor(11, 1);
             lcd.print("HOME");
             lcd.write(byte(3));
           break;
 
           case btnUp:
-            lcd.setCursor(7, 0);
-            lcd.print("    "); //4 espaços
-            lcd.setCursor(7, 0);
+            lcd.setCursor(0, 0);
+            lcd.print("ERRO: ");
+            lcd.setCursor(5, 0);
             lcd.print(analogRead(PIN_ERROR));
-            lcd.setCursor(4, 1);
-            lcd.print("    "); //4 espaços
+            lcd.setCursor(0, 1);
+            lcd.print("LDR: ");
             lcd.setCursor(4, 1);
             lcd.print(adr_ldr);
-            lcd.setCursor(13, 1);
-            lcd.print("   "); //3 espaços
-            lcd.setCursor(13, 1);
+            lcd.setCursor(8, 1);
+            lcd.print("LED: "); //3 espaços
+            lcd.setCursor(12, 1);
             lcd.print(led_value);
           break;
 
@@ -79,8 +79,10 @@ class HUD{
           case btnLeft:
             lcd.setCursor(0, 0);
             lcd.print("LED: ");
-            lcd.setCursor(0, 5);
-            lcd.print(led_value);
+            lcd.setCursor(4, 0);
+            lcd.print(map(led_value, 0, 255, 0, 100));
+            lcd.setCursor(7, 0);
+            lcd.print("%");
             lcd.setCursor(0, 1);
             lcd.write(byte(3));
             lcd.print("HOME ");
@@ -91,32 +93,7 @@ class HUD{
             lcd.print("LDR");
             lcd.write(byte(1));
           break;
-
-          case btnSelect:
-
-          break;
-
-          case btnNone:
-
-          break;
         }
-        
-      }
-
-    // Prints all info on display
-    void printInfo(uint8_t led_value, uint16_t adr_ldr){
-        lcd.setCursor(7, 0);
-        lcd.print("    "); //4 spaces
-        lcd.setCursor(7, 0);
-        lcd.print(analogRead(PIN_ERROR));
-        lcd.setCursor(4, 1);
-        lcd.print("    "); //4 spaces
-        lcd.setCursor(4, 1);
-        lcd.print(adr_ldr);
-        lcd.setCursor(13, 1);
-        lcd.print("   "); //3 spaces
-        lcd.setCursor(13, 1);
-        lcd.print(led_value);
       }
     };
 } // namespace UI
