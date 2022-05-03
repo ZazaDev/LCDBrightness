@@ -1,3 +1,7 @@
+// Nome: Allan Duarte Ehlert
+// Turma: TAI3M
+// Controle de LED via LDR
+
 #include <Arduino.h>
 #include <LiquidCrystal.h>
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
@@ -11,17 +15,30 @@ LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 #define PIN_LED 11
 #define KEY_STATE A0
 
-#define DEBOUNCE_TIME 50
 #define DELAY 100
 #define HIGH_LUM 1000
 #define LOW_LUM 150
 #define TIMEOUT_TIME 10000
 
+// ╔═════════════════════════════════════════╗
+// ║               INFO TABLE                ║
+// ╠═════════════════════════════════════════╣
+// ║ Key press menu interactions             ║
+// ║ Right key press: LDR screen             ║
+// ║ Left key press: LED screen              ║
+// ║ Down key press: HOME screen             ║
+// ║ Up key press: ALL screen                ║
+// ╠═════════════════════════════════════════╣
+// ║ ADC values on each button press         ║
+// ║ NONE = 1023                             ║
+// ║ SELECT = 639                            ║
+// ║ LEFT = 410                              ║
+// ║ UP = 100                                ║
+// ║ DOWN = 256                              ║
+// ║ RIGHT = 0                               ║
+// ╚═════════════════════════════════════════╝
+
 // Identifies what keys are being pressed
-// Right key press: LDR screen
-// Left key press: LED screen
-// Down key press: HOME screen
-// Up key press: ALL screen
 uint8_t getKey(uint16_t btnRead){
   if(btnRead >= 0 && btnRead < 80){
     return btnRight;
@@ -59,7 +76,6 @@ void setup(){
   lcd.home();
   lcd.setBacklightPin(10, POSITIVE);
   lcd.backlight();
-
   // Initializes the HUD by drawing the home page
   UI::HUD::draw(lcd, btnDown, 0, 0);
 }
@@ -101,31 +117,24 @@ void loop(){
   if(!isTimeout){
     lcd.backlight();
   }
-  #ifdef DEBUG_MODE
+
+  // Prints the information on the serial monitor
+  Serial.print("ADC value: ");
   Serial.println(btnRead);
-  // NONE = 1023
-  // SELECT = 639
-  // LEFT = 410
-  // UP = 100
-  // DOWN = 256
-  // RIGHT = 0
-  #endif
+  Serial.print("Button pressed: ");
+  Serial.println(keyPressed);
 
   // Reads if the key is pressed
   uint8_t btnState = digitalRead(KEY_STATE);
-  static uint8_t lastBtnState = 0;
+  static uint8_t lastBtnState = 1;
 
-  // Debounce fix
-  uint32_t lastDebounceTime = 0;
   // If key is pressed, gets what key is pressed
-  if((millis() - lastDebounceTime) > DEBOUNCE_TIME){
-    if(btnState != lastBtnState){
-      if(btnState == HIGH){
-        keyPressed = getKey(btnRead);
-        UI::HUD::draw(lcd, keyPressed, led_value, adr_ldr);
-        lastTimeout = millis();
-        isTimeout = false;
-      }
+  if(btnState != lastBtnState){
+    if(btnState == HIGH){
+      keyPressed = getKey(btnRead);
+      UI::HUD::draw(lcd, keyPressed, led_value, adr_ldr);
+      lastTimeout = millis();
+      isTimeout = false;
     }
   }
   lastBtnState = btnState;

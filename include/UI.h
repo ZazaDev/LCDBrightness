@@ -3,7 +3,6 @@
 #ifndef UI_H
 #define UI_H
 
-// Not sure if its a good idea to define a pin in a header file, probably not
 #define PIN_ERROR A2
 
 #include <Arduino.h>
