@@ -39,30 +39,34 @@ LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 // ╚═════════════════════════════════════════╝
 
 // Identifies what keys are being pressed
-uint8_t getKey(uint16_t btnRead){
-  if(btnRead >= 0 && btnRead < 80){
+uint8_t getKey(uint16_t btnRead) {
+  if (btnRead >= 0 && btnRead < 80) {
     return btnRight;
   }
-  if(btnRead > 80 && btnRead < 225){
+  if (btnRead > 80 && btnRead < 225) {
     return btnUp;
   }
-  if(btnRead > 225 && btnRead < 395){
+  if (btnRead > 225 && btnRead < 395) {
     return btnDown;
   }
-  if(btnRead > 395 && btnRead < 625){
+  if (btnRead > 395 && btnRead < 625) {
     return btnLeft;
   }
+  if (btnRead > 625 && btnRead < 1000) {
+    return btnSelect;
+  }
+  return btnNone;
 }
 
-uint8_t ldr_to_led(uint16_t value, uint16_t lowlum, uint16_t highlum){
-  if(value <= lowlum || value >= highlum)
-  return 0;
-  else{
+uint8_t ldr_to_led(uint16_t value, uint16_t lowlum, uint16_t highlum) {
+  if (value <= lowlum || value >= highlum)
+    return 0;
+  else {
     return map(value, lowlum, highlum, 50, 255);
   }
 }
 
-void setup(){
+void setup() {
   pinMode(PIN_LDR, INPUT);
   pinMode(PIN_ERROR, INPUT);
   pinMode(PIN_LED, OUTPUT);
@@ -80,62 +84,71 @@ void setup(){
   UI::HUD::draw(lcd, btnDown, 0, 0);
 }
 
-void loop(){
-  // Was going to draw the hud every frame, but figured i'd draw it on a 100 ms refresh rate
-  // UI::HUD::draw(lcd, keyPressed, led_value, adr_ldr);
+void loop() {
+  // Was going to draw the hud every frame, but figured i'd draw it on a 100 ms
+  // refresh rate UI::HUD::draw(lcd, keyPressed, led_value, adr_ldr);
   static bool isTimeout = false;
+  static bool ligar_led = true;
   uint16_t adr_ldr = analogRead(PIN_LDR);
+  uint16_t btnRead = analogRead(KEY_STATE);
   uint8_t led_value = ldr_to_led(adr_ldr, LOW_LUM, HIGH_LUM);
-  static uint32_t last_time = millis();
-  analogWrite(PIN_LED, led_value);
+  static uint32_t last_time = 0;
+
+  if (ligar_led)
+    analogWrite(PIN_LED, led_value);
+  else {
+    analogWrite(PIN_LED, 0);
+    isTimeout = true;
+  }
   uint32_t actual_time = millis();
 
   // Reads what keys are pressed
-  uint16_t btnRead = analogRead(KEY_STATE);
   static uint8_t keyPressed = btnDown;
 
   // Refreshes the display after 100ms
-  if(actual_time - last_time >= DELAY){
-    lcd.clear();
+  if (actual_time - last_time >= DELAY) {
     UI::HUD::draw(lcd, keyPressed, led_value, adr_ldr);
-    #ifdef DEBUG_MODE
+#ifdef DEBUG_MODE
     Serial.println("HUD refreshed.");
-    #endif
+#endif
     last_time = actual_time;
   }
 
   // Timeout logic
   static uint32_t lastTimeout = 0;
   uint32_t timeTimeout = millis();
-  if(timeTimeout - lastTimeout >= TIMEOUT_TIME){
+  if (timeTimeout - lastTimeout >= TIMEOUT_TIME) {
     isTimeout = true;
     lastTimeout = timeTimeout;
   }
-  if(isTimeout){
+  if (isTimeout) {
     lcd.noBacklight();
   }
-  if(!isTimeout){
+  if (!isTimeout) {
     lcd.backlight();
   }
 
   // Prints the information on the serial monitor
-  Serial.print("ADC value: ");
-  Serial.println(btnRead);
-  Serial.print("Button pressed: ");
-  Serial.println(keyPressed);
 
   // Reads if the key is pressed
-  uint8_t btnState = digitalRead(KEY_STATE);
-  static uint8_t lastBtnState = 1;
+  uint16_t btnState = analogRead(KEY_STATE);
+  static uint16_t lastBtnState = 1;
+  static uint32_t last_time_btn = millis();
+  uint32_t time_btn = millis();
 
   // If key is pressed, gets what key is pressed
-  if(btnState != lastBtnState){
-    if(btnState == HIGH){
+  if (abs(btnState - lastBtnState) > 25 && (time_btn - last_time_btn) >= 50) {
+    if (btnState < 1000) {
       keyPressed = getKey(btnRead);
+      Serial.print("Button pressed: ");
+      Serial.println(keyPressed);
+      if (keyPressed == btnSelect)
+        ligar_led = !ligar_led;
       UI::HUD::draw(lcd, keyPressed, led_value, adr_ldr);
       lastTimeout = millis();
       isTimeout = false;
     }
+    last_time_btn = time_btn;
   }
   lastBtnState = btnState;
 }
