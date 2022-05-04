@@ -137,11 +137,13 @@ void loop() {
   uint32_t time_btn = millis();
 
   // If key is pressed, gets what key is pressed
-  if (abs(btnState - lastBtnState) > 25 && (time_btn - last_time_btn) >= 50) {
+  if (abs(btnState - lastBtnState) > 50 && (time_btn - last_time_btn) >= 100) {
     if (btnState < 1000) {
       keyPressed = getKey(btnRead);
       Serial.print("Button pressed: ");
       Serial.println(keyPressed);
+      Serial.print("ADC: ");
+      Serial.println(btnState);
       if (keyPressed == btnSelect)
         ligar_led = !ligar_led;
       UI::HUD::draw(lcd, keyPressed, led_value, adr_ldr);

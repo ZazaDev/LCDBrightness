@@ -32,17 +32,17 @@ public:
   // BYTE3 Down key press: HOME screen
   static void draw(LiquidCrystal &lcd, uint8_t keyNum, uint8_t led_value,
                    uint16_t adr_ldr) {
-    static bool atualizar = false;
-    static uint8_t ultima_keyNum = btnDown;
+    static bool refresh = false;
+    static uint8_t lastKeyNum = btnDown;
 
-    if (ultima_keyNum != keyNum) {
-      atualizar = false;
-      ultima_keyNum = keyNum;
+    if (lastKeyNum != keyNum) {
+      refresh = false;
+      lastKeyNum = keyNum;
     }
 
     switch (keyNum) {
     case btnRight:
-      if (!atualizar) {
+      if (!refresh) {
         lcd.clear();
         lcd.setCursor(0, 0);
         lcd.print("LDR: ");
@@ -58,17 +58,17 @@ public:
         lcd.print("HOME");
         lcd.write(byte(3));
 
-        atualizar = true;
+        refresh = true;
       } else {
         lcd.setCursor(4, 0);
-        lcd.print("   ");
+        lcd.print("    ");
         lcd.setCursor(4, 0);
         lcd.print(adr_ldr);
       }
       break;
 
     case btnUp:
-      if (!atualizar) {
+      if (!refresh) {
         lcd.clear();
         lcd.setCursor(0, 0);
         lcd.print("ERRO: ");
@@ -83,7 +83,7 @@ public:
         lcd.setCursor(12, 1);
         lcd.print(led_value);
 
-        atualizar = true;
+        refresh = true;
       } else {
         lcd.setCursor(12, 1);
         lcd.print("   ");
@@ -101,7 +101,7 @@ public:
       break;
 
     case btnDown:
-      if (!atualizar) {
+      if (!refresh) {
 
         lcd.clear();
         lcd.setCursor(0, 0);
@@ -116,12 +116,12 @@ public:
         lcd.print("LDR");
         lcd.write(byte(1));
 
-        atualizar = true;
+        refresh = true;
       }
       break;
 
     case btnLeft:
-      if (!atualizar) {
+      if (!refresh) {
         lcd.clear();
         lcd.setCursor(0, 0);
         lcd.print("LED: ");
@@ -139,7 +139,7 @@ public:
         lcd.print("LDR");
         lcd.write(byte(1));
 
-        atualizar = true;
+        refresh = true;
       } else {
         lcd.setCursor(4, 0);
         lcd.print("   ");
