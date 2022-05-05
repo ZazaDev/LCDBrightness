@@ -15,6 +15,7 @@ LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 #define PIN_LED 11
 #define KEY_STATE A0
 
+#define READ_TIME 10
 #define DELAY 100
 #define HIGH_LUM 1000
 #define LOW_LUM 150
@@ -103,10 +104,20 @@ void loop() {
   static bool isTimeout = false;
   static bool ledOn = true;
 
+  // millis(); implementation
+  uint32_t actual_time = millis();
+  static uint32_t last_time = 0;
+  static uint32_t last_read = 0;
+
   // LDR, Button and LED reads
-  uint16_t adr_ldr = analogRead(PIN_LDR);
-  uint16_t btnRead = analogRead(KEY_STATE);
-  uint8_t led_value = ldr_to_led(adr_ldr, LOW_LUM, HIGH_LUM);
+  static uint16_t adr_ldr, btnRead = 0;
+  static uint8_t led_value = 0;
+  if(actual_time - last_read >= READ_TIME){
+    adr_ldr = analogRead(PIN_LDR);
+    btnRead = analogRead(KEY_STATE);
+    led_value = ldr_to_led(adr_ldr, LOW_LUM, HIGH_LUM);
+    last_read = actual_time;
+  }
 
   // Timeout-LED-Display relation
   // If statement ledOn is true, keep writing the normal led values
@@ -117,10 +128,6 @@ void loop() {
     analogWrite(PIN_LED, 0);
     isTimeout = true;
   }
-
-  // millis(); implementation
-  uint32_t actual_time = millis();
-  static uint32_t last_time = 0;
 
   // Sets initial key press to DOWN (HOME page)
   static uint8_t keyPressed = btnDown;
